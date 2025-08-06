@@ -32,7 +32,7 @@ async def approve_user(app, chat_id, user):
         print(f"❌ Error with {user.id}: {e}")
         return "skipped"
 
-async def main():
+async def main(chat_ref):
     async with Client("fast_approver", api_id=api_id, api_hash=api_hash, session_string=session_string) as app:
         try:
             chat = await app.get_chat(chat_ref)
@@ -42,7 +42,7 @@ async def main():
             skipped = 0
             for i in range(0, len(join_requests), CONCURRENCY):
                 batch = join_requests[i:i+CONCURRENCY]
-                tasks = [approve_user(app, chat.id, req.user) for req in batch]
+                tasks = [approve_user(app, chat_id, req.user) for req in batch]
                 results = await asyncio.gather(*tasks)
                 approved += results.count("approved")
                 skipped += results.count("skipped")
@@ -53,7 +53,7 @@ async def main():
 async def process_username(username):
     async with Client("fast_approver", api_id=api_id, api_hash=api_hash, session_string=session_string) as app:
         try:
-        chat = await app.get_chat(username)
+            chat = await app.get_chat(username)
             chat_id = chat.id
             join_requests = [req async for req in app.get_chat_join_requests(chat_id)]
             approved = 0
@@ -74,7 +74,7 @@ async def process_username(username):
 def index():
     loop = asyncio.new_event_loop()
     asyncio.set_event_loop(loop)
-    result = loop.run_until_complete(main())
+    result = loop.run_until_complete(main(default_chat_id))
     return jsonify({"status": "done", "result": result})
 
 async def join_only(invite_link):
