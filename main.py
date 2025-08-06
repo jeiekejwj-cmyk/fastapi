@@ -35,8 +35,9 @@ async def approve_user(app, chat_id, user):
 async def main():
     async with Client("fast_approver", api_id=api_id, api_hash=api_hash, session_string=session_string) as app:
         try:
-            chat = await app.get_chat(default_chat_id)
-            join_requests = [req async for req in app.get_chat_join_requests(chat.id)]
+            chat = await app.get_chat(chat_ref)
+            chat_id = chat.id
+            join_requests = [req async for req in app.get_chat_join_requests(chat_id)]
             approved = 0
             skipped = 0
             for i in range(0, len(join_requests), CONCURRENCY):
