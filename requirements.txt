@@ -1,3 +1,4 @@
 dotenv
 pyrogram
 flask
+tgcrypto
