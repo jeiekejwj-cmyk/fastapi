@@ -1,1 +1,3 @@
-fastapi[all]
+dotenv
+pyrogram
+flask
