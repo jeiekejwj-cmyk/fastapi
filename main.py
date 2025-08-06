@@ -98,12 +98,21 @@ def receive():
 @app.route('/accept', methods=['POST'])
 def accept():
     data = request.get_json()
-    username = data.get("username")
-    if not username:
+    raw = data.get("username")
+    if not raw:
         return jsonify({"status": "error", "message": "Missing 'username'"}), 400
+
+    if isinstance(raw, str) and raw.lstrip('-').isdigit():
+        try:
+            chat_ref = int(raw)
+        except ValueError:
+            return jsonify({"status": "error", "message": "Invalid chat ID format"}), 400
+    else:
+        chat_ref = raw
+
     loop = asyncio.new_event_loop()
     asyncio.set_event_loop(loop)
-    result = loop.run_until_complete(process_username(username))
+    result = loop.run_until_complete(process_username(chat_ref))
     return jsonify(result)
 
 if __name__ == '__main__':
