@@ -73,16 +73,28 @@ async def process_username(username):
 async def leave_chat(chat_identifier):
     async with Client("fast_approver", api_id=api_id, api_hash=api_hash, session_string=session_string) as app:
         try:
-            await app.leave_chat(chat_identifier)
-            return {"status": "left", "chat": chat_identifier}
+            chat = await app.get_chat(chat_identifier)
+            await app.leave_chat(chat.id)
+            return {
+                "status": "left",
+                "chat_title": chat.title,
+                "chat_id": chat.id
+            }
+        except PeerIdInvalid:
+            return {
+                "status": "error",
+                "message": f"Peer id invalid: {chat_identifier}"
+            }
         except Exception as e:
-            return {"status": "error", "message": str(e)}
+            return {
+                "status": "error",
+                "message": str(e)
+            }
 
 @app.route('/leave', methods=['POST'])
 def leave():
     data = request.get_json()
-    chat_id = data.get("chat_id")  # Can be ID or username
-
+    chat_id = data.get("chat_id")
     if not chat_id:
         return jsonify({"status": "error", "message": "Missing 'chat_id'"}), 400
 
