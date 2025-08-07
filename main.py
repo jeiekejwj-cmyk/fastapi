@@ -70,6 +70,28 @@ async def process_username(username):
         except Exception as e:
             return {"status": "error", "message": str(e)}
 
+async def leave_chat(chat_identifier):
+    async with Client("fast_approver", api_id=api_id, api_hash=api_hash, session_string=session_string) as app:
+        try:
+            await app.leave_chat(chat_identifier)
+            return {"status": "left", "chat": chat_identifier}
+        except Exception as e:
+            return {"status": "error", "message": str(e)}
+
+@app.route('/leave', methods=['POST'])
+def leave():
+    data = request.get_json()
+    chat_id = data.get("chat_id")  # Can be ID or username
+
+    if not chat_id:
+        return jsonify({"status": "error", "message": "Missing 'chat_id'"}), 400
+
+    try:
+        result = asyncio.run(leave_chat(chat_id))
+        return jsonify(result)
+    except Exception as e:
+        return jsonify({"status": "error", "message": str(e)}), 500
+
 @app.route('/', methods=['GET'])
 def index():
     loop = asyncio.new_event_loop()
